@@ -23,6 +23,7 @@ makedocs(
         ],
         "arguments.md",
         "tutorials/inner_workings.md",
+        #"notebook_example.html",
     ],
     doctest = false,
 )
