@@ -28,7 +28,8 @@ end
 md"""
 # Latexify.jl with Pluto.jl
 
-Here's some examples of how to use Latexify in a Pluto notebook, as well as some interactions. Much of this will translate well to other contexts.
+Here's some examples of how to use Latexify in a Pluto notebook, as well as some 
+interactions. Much of this will translate well to other contexts.
 """
 
 # ╔═╡ 15c8bc1c-6894-42bb-931f-1765594ca0d8
@@ -99,7 +100,7 @@ value of any assignments):
 """
 
 # ╔═╡ 63d91b6c-65f5-4311-b34a-56a75c04594b
-@latexdefine y  post=x->round(x; sigdigits=3)
+@latexdefine y  post=x->round(x; sigdigits=4)
 
 # ╔═╡ dcd5e334-d6a4-4068-85b0-ab69c1c92486
 Markdown.parse("""
@@ -221,7 +222,7 @@ UnitfulLatexify = "45397f5d-5981-4c77-b2b3-fc36d6e9b728"
 
 [compat]
 LaTeXStrings = "~1.3.0"
-Latexify = "~0.15.14"
+Latexify = "~0.15.15"
 Unitful = "~1.11.0"
 UnitfulLatexify = "~1.6.2"
 """
@@ -272,9 +273,9 @@ version = "1.3.0"
 
 [[deps.Latexify]]
 deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "Printf", "Requires"]
-git-tree-sha1 = "6f14549f7760d84b2db7a9b10b88cd3cc3025730"
+git-tree-sha1 = "46a39b9c58749eefb5f2dc1178cb8fab5332b1ab"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.14"
+version = "0.15.15"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
