@@ -117,6 +117,7 @@ function render(s::LaTeXString, ::MIME"application/pdf";
         name=tempname(),
         command="\\Large",
         open=true,
+        clean=false,
         documentclass=("standalone", "varwidth=100cm"),
         packages=occursin("\\ce{", s) ? (
                                          "amssymb","amsmath","mhchem"
@@ -143,6 +144,8 @@ function render(s::LaTeXString, ::MIME"application/pdf";
         _openfile(name; ext="pdf")
     end
 
+    clean && rm.(name .* [".tex", ".aux", ".out", ".log"]; force=true)
+
     return nothing
 end
 
@@ -152,6 +155,7 @@ function render(s::LaTeXString, ::MIME"application/x-dvi";
         name=tempname(),
         command="\\Large",
         open=true,
+        clean=false,
         documentclass=("standalone", "varwidth=100cm"),
         packages=occursin("\\ce{", s) ? (
                                          "amssymb","amsmath","mhchem"
@@ -178,6 +182,8 @@ function render(s::LaTeXString, ::MIME"application/x-dvi";
         _openfile(name; ext="dvi")
     end
 
+    clean && rm.(name .* [".tex", ".aux", ".out", ".log"]; force=true)
+
     return nothing
 end
 
@@ -189,6 +195,8 @@ function render(s::LaTeXString, ::MIME"image/png";
         callshow=true,
         open=true,
         dpi=300,
+        background="Transparent",
+        clean=false,
         documentclass=("standalone", "varwidth=100cm"),
         packages=occursin("\\ce{", s) ? (
                                          "amssymb","amsmath","mhchem"
@@ -198,7 +206,7 @@ function render(s::LaTeXString, ::MIME"image/png";
     )
     render(s, MIME("application/x-dvi"); debug=debug, name=name, command=command, open=false, documentclass=documentclass, packages=packages)
 
-    cmd = `dvipng -bg Transparent -D $(dpi) -T tight -o $(name).png $(name).dvi`
+    cmd = `dvipng -bg $(background) -D $(dpi) -T tight -o $(name).png $(name).dvi`
     debug || (cmd = pipeline(cmd, devnull))
     run(cmd)
 
@@ -210,6 +218,8 @@ function render(s::LaTeXString, ::MIME"image/png";
         _openfile(name; ext="png")
     end
 
+    clean && rm.(name .* [".dvi", ".tex", ".aux", ".out", ".log"]; force=true)
+
     return nothing
 end
 
@@ -220,6 +230,7 @@ function render(s::LaTeXString, ::MIME"image/svg";
         command="\\Large",
         callshow=true,
         open=true,
+        clean=false,
         documentclass=("standalone", "varwidth=100cm"),
         packages=occursin("\\ce{", s) ? (
                                          "amssymb","amsmath","mhchem"
@@ -243,6 +254,8 @@ function render(s::LaTeXString, ::MIME"image/svg";
     elseif open
         _openfile(name; ext="svg")
     end
+
+    clean && rm.(name .* [".dvi", ".tex", ".aux", ".out", ".log"]; force=true)
 
     return nothing
 end
