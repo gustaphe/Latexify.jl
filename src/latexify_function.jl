@@ -46,7 +46,7 @@ function process_latexify(args...; kwargs...)
 
     latex_function = infer_output(env, args...)
 
-    result = latex_function(args...; kwargs...)
+    return latex_function(args...; kwargs...)
 end
 
 apply_recipe(args...; kwargs...) = (args, kwargs)

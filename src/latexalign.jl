@@ -51,7 +51,7 @@ function _latexalign(arr::AbstractMatrix; separator=" =& ", double_linebreak=fal
     else
         str *= "\\begin{align$(starred ? "*" : "")}\n"
     end
-    if rows == :all
+    if rows === :all
         iterate_rows = 1:(size(arr)[1])
     else
         iterate_rows = rows

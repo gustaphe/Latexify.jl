@@ -8,16 +8,16 @@ end
 
 # check for flags as part of the `-->` expression
 function _is_arrow_tuple(expr::Expr)
-    expr.head == :tuple && !isempty(expr.args) &&
+    expr.head === :tuple && !isempty(expr.args) &&
         isa(expr.args[1], Expr) &&
-        expr.args[1].head == :(-->)
+        expr.args[1].head === :(-->)
 end
 
 function _equals_symbol(arg::Symbol, sym::Symbol)
     arg == sym
 end
 function _equals_symbol(arg::Expr, sym::Symbol) #not sure this method is necessary anymore on 0.7
-    arg.head == :quote && arg.args[1] == sym
+    arg.head === :quote && arg.args[1] == sym
 end
 function _equals_symbol(arg::QuoteNode, sym::Symbol)
     arg.value == sym
@@ -27,14 +27,14 @@ _equals_symbol(x, sym::Symbol) = false
 function create_kw_body(func_signature::Expr)
     # get the arg list, stripping out any keyword parameters into a
     # bunch of get!(kw, key, value) lines
-    func_signature.head == :where && return create_kw_body(func_signature.args[1])
+    func_signature.head === :where && return create_kw_body(func_signature.args[1])
     args = func_signature.args[2:end]
     kw_body = Expr(:block)
     kw_dict = Dict{Symbol, Any}()
-    if isa(args[1], Expr) && args[1].head == :parameters
+    if isa(args[1], Expr) && args[1].head === :parameters
         for kwpair in args[1].args
             k, v = kwpair.args
-            if isa(k, Expr) && k.head == :(::)
+            if isa(k, Expr) && k.head === :(::)
                 k = k.args[1]
                 @warn("Type annotations on keyword arguments not currently supported in recipes. Type information has been discarded")
             end
@@ -50,12 +50,12 @@ end
 function get_function_def(func_signature::Expr, args::Vector)
     front = func_signature.args[1]
     kwarg_expr = Expr(:parameters, Expr(:..., esc(:kwargs)))
-    if func_signature.head == :where
+    if func_signature.head === :where
         Expr(:where, get_function_def(front, args), esc.(func_signature.args[2:end])...)
-    elseif func_signature.head == :call
+    elseif func_signature.head === :call
         #= func = Expr(:call, :(Latexify.apply_recipe), esc.(args)..., Expr(:parameters, :kwargs)) =#
         func = Expr(:call, :(Latexify.apply_recipe), kwarg_expr, esc.(args)...)
-        if isa(front, Expr) && front.head == :curly
+        if isa(front, Expr) && front.head === :curly
             Expr(:where, func, esc.(front.args[2:end])...)
         else
             func
@@ -90,14 +90,14 @@ function process_recipe_body!(expr::Expr)
                 e = e.args[1]
             end
 
-            if e.head == :(:=)
+            if e.head === :(:=)
                 force = true
                 e.head = :(-->)
             end
 
             # we are going to recursively swap out `a --> b, flags...` commands
             # note: this means "x may become 5"
-            if e.head == :(-->)
+            if e.head === :(-->)
                 k, v = e.args
                 if isa(k, Symbol)
                     k = QuoteNode(k)
@@ -118,7 +118,7 @@ function process_recipe_body!(expr::Expr)
                 process_recipe_body!(e)
             end
             
-            if  e.head == :return
+            if  e.head === :return
                 if e.args[1] isa Expr
                     if e.args[1] isa Tuple
                         e.args[1] = :(($(e.args[1]), kwargs))

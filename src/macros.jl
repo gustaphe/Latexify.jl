@@ -106,7 +106,7 @@ end
 
 function _executable(expr)
     return postwalk(expr) do ex
-        if ex isa Expr && ex.head == :$
+        if ex isa Expr && ex.head === :$
             return ex.args[1]
         end
         return ex

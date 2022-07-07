@@ -21,7 +21,7 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
     # Remove math italics for variables (i.e. words) longer than 2 characters.
     # args = map(i -> (i isa String && all(map(isletter, collect(i))) && length(i) > 2) ? "{\\rm $i}" : i, args)
 
-    if ex.head == :latexifymerge
+    if ex.head === :latexifymerge
         if all(prevOp .== :none)
             return join(args)
         else
@@ -53,9 +53,9 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
 
     elseif op in [:-, :.-]
         if length(args) == 2
-            if prevOp[2] == :none && string(args[2])[1] == '-'
+            if prevOp[2] === :none && string(args[2])[1] == '-'
                 return " + " * string(args[2])[2:end]
-            elseif prevOp[2] == :none && string(args[2])[1] == '+'
+            elseif prevOp[2] === :none && string(args[2])[1] == '+'
                 return " - " * string(args[2])[2:end]
             elseif prevOp[2] in [:+, :-, :±, :.+, :.-, :.±] || (ex.args[2] isa Complex && !iszero(ex.args[2].re))
                 return " - \\left( $(args[2]) \\right)"
@@ -64,7 +64,7 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         end
         (prevOp[3] in [:+, :-, :±, :.+, :.-, :.±] || (ex.args[3] isa Complex && !iszero(ex.args[3].re))) && (args[3] = "\\left( $(args[3]) \\right)")
 
-        if prevOp[3] == :none && string(args[3])[1] == '-'
+        if prevOp[3] === :none && string(args[3])[1] == '-'
             return "$(args[2]) + " * string(args[3])[2:end]
         end
         return "$(args[2]) - $(args[3])"
@@ -81,11 +81,11 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         return "$(args[2])^{$(args[3])}"
     elseif (ex.head in (:(=), :function)) && length(args) == 2
         return "$(args[1]) = $(args[2])"
-    elseif op == :(!)
+    elseif op === :(!)
         return "\\neg $(args[2])"
     end
 
-    if ex.head == :.
+    if ex.head === :.
         ex.head = :call
         # op = string(op, ".") ## Signifies broadcasting.
     end
@@ -115,7 +115,7 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
     end
 
     ### Check for chained comparison operators
-    if ex.head == :comparison && Symbol.(args[2:2:end]) ⊆ keys(comparison_operators)
+    if ex.head === :comparison && Symbol.(args[2:2:end]) ⊆ keys(comparison_operators)
         str = join([isodd(i) ? "$var" : comparison_operators[var] for (i, var) in enumerate(Symbol.(args))], " ")
         str = "\\left( $str \\right)"
         return str
@@ -125,19 +125,19 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         return "$(function2latex[op])\\left( $(join(args[2:end], ", ")) \\right)"
     end
 
-    op == :abs && return "\\left|$(args[2])\\right|"
-    op == :abs2 && return "\\left|$(args[2])\\right|^{2}"
-    op == :floor && return "\\left\\lfloor $(last(args))\\right\\rfloor "
-    op == :ceil && return "\\left\\lceil $(last(args))\\right\\rceil "
-    op == :round && return "\\left\\lfloor $(last(args))\\right\\rceil "
-    if op == :norm
+    op === :abs && return "\\left|$(args[2])\\right|"
+    op === :abs2 && return "\\left|$(args[2])\\right|^{2}"
+    op === :floor && return "\\left\\lfloor $(last(args))\\right\\rfloor "
+    op === :ceil && return "\\left\\lceil $(last(args))\\right\\rceil "
+    op === :round && return "\\left\\lfloor $(last(args))\\right\\rceil "
+    if op === :norm
         length(args) == 2 && return "\\left\\|$(args[2])\\right\\|"
         return "\\left\\|$(args[2])\\right\\|_{$(args[3])}"
     end
-    op == :exp && return "e^{$(args[2])}"
+    op === :exp && return "e^{$(args[2])}"
     op in (:sqrt, :√) && return "\\sqrt{$(args[2])}"
-    op == :∛ && return "\\sqrt[3]{$(args[2])}"
-    op == :∜ && return "\\sqrt[4]{$(args[2])}"
+    op === :∛ && return "\\sqrt[3]{$(args[2])}"
+    op === :∜ && return "\\sqrt[4]{$(args[2])}"
     op in (:sum, :prod) && return "\\$(op) $(args[2])"
 
     ## Leave math italics for single-character operator names (e.g., f(x)).
@@ -145,10 +145,10 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
     # upright
     opname = convert_subscript(string(op); function_name=true, kwargs...)
 
-    if ex.head == :ref
-        if index == :subscript
+    if ex.head === :ref
+        if index === :subscript
             return "$(args[1])_{$(join(args[2:end], ","))}"
-        elseif index == :bracket
+        elseif index === :bracket
             argstring = join(args[2:end], ", ")
             return "$opname\\left[$argstring\\right]"
         else
@@ -156,15 +156,15 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         end
     end
 
-    if ex.head == :macrocall && ex.args[1] == Symbol("@__dot__")
+    if ex.head === :macrocall && ex.args[1] == Symbol("@__dot__")
         return string(ex.args[end])
     end
 
-    if ex.head == :macrocall
+    if ex.head === :macrocall
         ex.head = :call
     end
 
-    if ex.head == :call
+    if ex.head === :call
         if length(args) == 1
             return "$opname()"
         elseif args[2] isa String && occursin("=", args[2])
@@ -174,7 +174,7 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         end
     end
 
-    if ex.head == :tuple
+    if ex.head === :tuple
         # return "\\left(" * join(ex.args, ", ") * "\\right)"
         return join(ex.args, ", ")
     end
@@ -182,25 +182,25 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
     ex.head == Symbol("'") && return "$(args[1])'"
 
     ## Enable the parsing of kwargs in a function definition
-    ex.head == :kw && return "$(args[1]) = $(args[2])"
-    ex.head == :parameters && return join(args, ", ")
+    ex.head === :kw && return "$(args[1]) = $(args[2])"
+    ex.head === :parameters && return join(args, ", ")
 
     ## Use the last expression in a block.
     ## This is somewhat shady but it helps with latexifying functions.
-    ex.head == :block && return args[end]
+    ex.head === :block && return args[end]
 
     ## Sort out type annotations. Mainly for function arguments.
-    ex.head == :(::) && length(args) == 1 && return "::$(args[1])"
-    ex.head == :(::) && length(args) == 2 && return "$(args[1])::$(args[2])"
+    ex.head === :(::) && length(args) == 1 && return "::$(args[1])"
+    ex.head === :(::) && length(args) == 2 && return "$(args[1])::$(args[2])"
 
     ## Pass back values that were explicitly returned.
-    ex.head == :return && length(args) == 1 && return args[1]
+    ex.head === :return && length(args) == 1 && return args[1]
 
     ## Case enviroment for if statements and ternary ifs.
     if ex.head in (:if, :elseif)
         textif::String = "\\text{if }"
-        begincases::String = ex.head == :if ? "\\begin{cases}\n" : ""
-        endcases::String = ex.head == :if ? "\n\\end{cases}" : ""
+        begincases::String = ex.head === :if ? "\\begin{cases}\n" : ""
+        endcases::String = ex.head === :if ? "\n\\end{cases}" : ""
         if length(args) == 3
             # Check if already parsed elseif as args[3]
             haselseif::Bool = occursin(Regex("\\$textif"), args[3])
@@ -213,8 +213,8 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
     end
 
     ## Conditional operators converted to logical operators.
-    ex.head == :(&&) && length(args) == 2 && return "$(args[1]) \\wedge $(args[2])"
-    ex.head == :(||) && length(args) == 2 && return "$(args[1]) \\vee $(args[2])"
+    ex.head === :(&&) && length(args) == 2 && return "$(args[1]) \\wedge $(args[2])"
+    ex.head === :(||) && length(args) == 2 && return "$(args[1]) \\vee $(args[2])"
 
 
 

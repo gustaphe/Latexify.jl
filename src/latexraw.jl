@@ -68,12 +68,12 @@ function _latexraw(inputex::Expr; convert_unicode=true, kwargs...)
     function recurseexp!(ex)
         prevOp = Vector{Symbol}(undef, length(ex.args))
         fill!(prevOp, :none)
-        if ex.head==:call && ex.args[1] in (:sum, :prod) && ex.args[2] isa Expr && ex.args[2].head == :generator
+        if ex.head === :call && ex.args[1] in (:sum, :prod) && ex.args[2] isa Expr && ex.args[2].head === :generator
             op = ex.args[1]
             term = latexraw(ex.args[2].args[1])
             gen = ex.args[2].args[2]
             itervar = latexraw(gen.args[1])
-            if gen.args[2] isa Expr && gen.args[2].head == :call && gen.args[2].args[1] == :(:)
+            if gen.args[2] isa Expr && gen.args[2].head === :call && gen.args[2].args[1] == :(:)
                 # sum(x_n for n in n_0:N) => \sum_{n=n_0}^{N} x_n
                 lower = latexraw(gen.args[2].args[2])
                 upper = latexraw(gen.args[2].args[end])
@@ -122,9 +122,15 @@ function _latexraw(z::Complex; kwargs...)
         isone(-z.im) && return LaTeXString("-$(get(kwargs, :imaginary_unit, "\\mathit{i}"))")
         return LaTeXString("$(latexraw(z.im))$(get(kwargs, :imaginary_unit, "\\mathit{i}"))")
     end
-    return LaTeXString("$(latexraw(z.re;kwargs...))$(z.im < 0 ? "-" : "+" )$(latexraw(abs(z.im);kwargs...))$(get(kwargs, :imaginary_unit, "\\mathit{i}"))")
+    return LaTeXString(
+        latexraw(z.re; kwargs...) *
+        (z.im < 0 ? "-" : "+" ) *
+        latexraw(abs(z.im); kwargs...) *
+        get(kwargs, :imaginary_unit, "\\mathit{i}")
+    )
 end
-#latexraw(i::DataFrames.DataArrays.NAtype) = "\\textrm{NA}"
+
+# latexraw(i::DataFrames.DataArrays.NAtype) = "\\textrm{NA}"
 _latexraw(str::LaTeXStrings.LaTeXString; kwargs...) = str
 
 function _latexraw(i::Number; fmt=PlainNumberFormatter(), kwargs...)
@@ -133,12 +139,11 @@ function _latexraw(i::Number; fmt=PlainNumberFormatter(), kwargs...)
     return fmt(i)
 end
 
-function _latexraw(i::Char; convert_unicode=true, kwargs...)
+_latexraw(i::Char; convert_unicode=true, kwargs...) =
     LaTeXString(convert_unicode ? unicode2latex(string(i)) : string(i))
-end
 
 function _latexraw(i::Symbol; convert_unicode=true, snakecase=false, safescripts=false, kwargs...)
-    str = string(i == :Inf ? :∞ : i)
+    str = string(i === :Inf ? :∞ : i)
     str = convert_subscript(str; snakecase=snakecase)
     convert_unicode && (str = unicode2latex(str; safescripts=safescripts))
     return LaTeXString(str)
