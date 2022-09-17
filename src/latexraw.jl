@@ -127,7 +127,7 @@ end
 #latexraw(i::DataFrames.DataArrays.NAtype) = "\\textrm{NA}"
 _latexraw(str::LaTeXStrings.LaTeXString; kwargs...) = str
 
-function _latexraw(i::Number; fmt=PlainNumberFormatter(), kwargs...)
+function _latexraw(i::Number; fmt=FancyNumberFormatter(), kwargs...)
     try isinf(i) && return LaTeXString("$(sign(i) == -1 ? "-" : "")\\infty") catch; end
     fmt isa String && (fmt = PrintfNumberFormatter(fmt))
     return fmt(i)
