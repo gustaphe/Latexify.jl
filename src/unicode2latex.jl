@@ -1,78 +1,62 @@
 import OrderedCollections: OrderedDict
 import Base.Unicode
 
-mathup(c::Char, bold) = Char(
-    UInt32(c) + if isuppercase(c)
-        (bold ? #='𝐀'=#0x1d400 : #='A'=#0x0041) - #='A'=#0x0041  # Mathematical (Bold) Capital
-    elseif islowercase(c)
-        (bold ? #='𝐚'=#0x1d41a : #='a'=#0x0061) - #='a'=#0x0061  # Mathematical (Bold) Small
-    else
-        (bold ? #='𝟎'=#0x1d7ce : #='0'=#0x0030) - #='0'=#0x0030  # Mathematical (Bold) Digit
-    end
-)
-mathscr(c::Char, bold) = Char(
-    UInt32(c) + if isuppercase(c)
-        (bold ? #='𝓐'=#0x1d4d0 : #='𝒜'=#0x1d49c) - #='A'=#0x0041  # Mathematical (Bold) Script Capital
-    elseif islowercase(c)
-        (bold ? #='𝓪'=#0x1d4ea : #='𝒶'=#0x1d4b6) - #='a'=#0x0061  # Mathematical (Bold) Script Small
-    else
-        -UInt32(c)
-    end
-)
-mathit(c::Char, bold) = Char(
-    UInt32(c) + if isuppercase(c)
-        (bold ? #='𝑨'=#0x1d468 : #='𝐴'=#0x1d434) - #='A'=#0x0041  # Mathematical (Bold) Italic Capital
-    elseif islowercase(c)
-        (bold ? #='𝒂'=#0x1d482 : #='𝑎'=#0x1d44e) - #='a'=#0x0061  # Mathematical (Bold) Italic Small
-    else
-        -UInt32(c)
-    end
-)
-mathfrak(c::Char, bold) = Char(
-    UInt32(c) + if isuppercase(c)
-        (bold ? #='𝕬'=#0x1d56c : #='𝔄'=#0x1d504) - #='A'=#0x0041  # Mathematical (Bold) Fraktur Capital
-    elseif islowercase(c)
-        (bold ? #='𝖆'=#0x1d586 : #='𝔞'=#0x1d51e) - #='a'=#0x0061  # Mathematical (Bold) Fraktur Small
-    else
-        -UInt32(c)
-    end
-)
-mathsfup(c::Char, bold) = Char(
-    UInt32(c) + if isuppercase(c)
-        (bold ? #='𝗔'=#0x1d5d4 : #='𝖠'=#0x1d5a0) - #='A'=#0x0041  # Mathematical (Bold) Sans-Serif Capital
-    elseif islowercase(c)
-        (bold ? #='𝗮'=#0x1d5ee : #='𝖺'=#0x1d5ba) - #='a'=#0x0061  # Mathematical (Bold) Sans-Serif Small
-    else
-        (bold ? #='𝟬'=#0x1d7ec : #='𝟢'=#0x1d7e2) - #='0'=#0x0030  # Mathematical (Bold) Sans-Serif Digit
-    end
-)
-mathsfit(c::Char, bold) = Char(
-    UInt32(c) + if isuppercase(c)
-        (bold ? #='𝘼'=#0x1d63c : #='𝘈'=#0x1d608) - #='A'=#0x0041  # Mathematical (Bold) Sans-Serif Italic Capital
-    elseif islowercase(c)
-        (bold ? #='𝙖'=#0x1d656 : #='𝘢'=#0x1d622) - #='a'=#0x0061  # Mathematical (Bold) Sans-Serif Italic Small
-    else
-        -UInt32(c)
-    end
-)
-mathtt(c::Char) = Char(
-    UInt32(c) + if isuppercase(c)
-        #='𝙰'=#0x1d670 - #='A'=#0x0041  # Mathematical Monospace Capital
-    elseif islowercase(c)
-        #='𝚊'=#0x1d68a - #='a'=#0x0061  # Mathematical Monospace Small
-    else
-        #='𝟶'=#0x1d7f6 - #='0'=#0x0030  # Mathematical Monospace Digit
-    end
-)
-mathbb(c::Char) = Char(
-    UInt32(c) + if isuppercase(c)
-        #='𝔸'=#0x1d538 - #='A'=#0x0041  # Mathematical Double-Struck Capital
-    elseif islowercase(c)
-        #='𝕒'=#0x1d552 - #='a'=#0x0061  # Mathematical Double-Struck Small
-    else
-        #='𝟘'=#0x1d7d8 - #='0'=#0x0030  # Mathematical Double-Struck Digit 
-    end
-)
+mathup(c::Char, bold) = Char(UInt32(c) + if isuppercase(c)
+    (bold ? 0x1d400 : 0x0041) - 0x0041  # Mathematical (Bold) Capital
+elseif islowercase(c)
+    (bold ? 0x1d41a : 0x0061) - 0x0061  # Mathematical (Bold) Small
+else
+    (bold ? 0x1d7ce : 0x0030) - 0x0030  # Mathematical (Bold) Digit
+end)
+mathscr(c::Char, bold) = Char(UInt32(c) + if isuppercase(c)
+    (bold ? 0x1d4d0 : 0x1d49c) - 0x0041  # Mathematical (Bold) Script Capital
+elseif islowercase(c)
+    (bold ? 0x1d4ea : 0x1d4b6) - 0x0061  # Mathematical (Bold) Script Small
+else
+    -UInt32(c)
+end)
+mathit(c::Char, bold) = Char(UInt32(c) + if isuppercase(c)
+    (bold ? 0x1d468 : 0x1d434) - 0x0041  # Mathematical (Bold) Italic Capital
+elseif islowercase(c)
+    (bold ? 0x1d482 : 0x1d44e) - 0x0061  # Mathematical (Bold) Italic Small
+else
+    -UInt32(c)
+end)
+mathfrak(c::Char, bold) = Char(UInt32(c) + if isuppercase(c)
+    (bold ? 0x1d56c : 0x1d504) - 0x0041  # Mathematical (Bold) Fraktur Capital
+elseif islowercase(c)
+    (bold ? 0x1d586 : 0x1d51e) - 0x0061  # Mathematical (Bold) Fraktur Small
+else
+    -UInt32(c)
+end)
+mathsfup(c::Char, bold) = Char(UInt32(c) + if isuppercase(c)
+    (bold ? 0x1d5d4 : 0x1d5a0) - 0x0041  # Mathematical (Bold) Sans-Serif Capital
+elseif islowercase(c)
+    (bold ? 0x1d5ee : 0x1d5ba) - 0x0061  # Mathematical (Bold) Sans-Serif Small
+else
+    (bold ? 0x1d7ec : 0x1d7e2) - 0x0030  # Mathematical (Bold) Sans-Serif Digit
+end)
+mathsfit(c::Char, bold) = Char(UInt32(c) + if isuppercase(c)
+    (bold ? 0x1d63c : 0x1d608) - 0x0041  # Mathematical (Bold) Sans-Serif Italic Capital
+elseif islowercase(c)
+    (bold ? 0x1d656 : 0x1d622) - 0x0061  # Mathematical (Bold) Sans-Serif Italic Small
+else
+    -UInt32(c)
+end)
+mathtt(c::Char) = Char(UInt32(c) + if isuppercase(c)
+    0x1d670 - 0x0041  # Mathematical Monospace Capital
+elseif islowercase(c)
+    0x1d68a - 0x0061  # Mathematical Monospace Small
+else
+    0x1d7f6 - 0x0030  # Mathematical Monospace Digit
+end)
+mathbb(c::Char) = Char(UInt32(c) + if isuppercase(c)
+    0x1d538 - 0x0041  # Mathematical Double-Struck Capital
+elseif islowercase(c)
+    0x1d552 - 0x0061  # Mathematical Double-Struck Small
+else
+    0x1d7d8 - 0x0030  # Mathematical Double-Struck Digit 
+end)
 
 const greek_seq = (  # contiguous unicode sequence
     raw"\Alpha",
@@ -176,27 +160,29 @@ const emphases = (
 """
 function latex_diacritics(chars::AbstractVector)
     out = []
-    for c ∈ chars, (mod, mark) ∈ (
-        '`' => Char(0x300),  # latex sequence \`{c} maps to 'c' * Char(0x300) := "c̀"
-        "'" => Char(0x301),
-        '^' => Char(0x302),
-        '~' => Char(0x303),
-        '=' => Char(0x304),
-        'u' => Char(0x306),
-        '.' => Char(0x307),
-        '"' => Char(0x308),
-        'r' => Char(0x30a),
-        'H' => Char(0x30b),
-        'v' => Char(0x30c),
-        'd' => Char(0x323),
-        'c' => Char(0x327),
-        'k' => Char(0x328),
-        'b' => Char(0x331),
-    )
-        for ((_, et), func) ∈ emphases
+    for c in chars,
+        (mod, mark) in (
+            '`' => Char(0x300),  # latex sequence \`{c} maps to 'c' * Char(0x300) := "c̀"
+            "'" => Char(0x301),
+            '^' => Char(0x302),
+            '~' => Char(0x303),
+            '=' => Char(0x304),
+            'u' => Char(0x306),
+            '.' => Char(0x307),
+            '"' => Char(0x308),
+            'r' => Char(0x30a),
+            'H' => Char(0x30b),
+            'v' => Char(0x30c),
+            'd' => Char(0x323),
+            'c' => Char(0x327),
+            'k' => Char(0x328),
+            'b' => Char(0x331),
+        )
+
+        for ((_, et), func) in emphases
             isempty(et) && continue
             repl = "\\$mod{$c}"
-            for emph ∈ et
+            for emph in et
                 isempty(emph) && continue
                 repl = "\\$emph{$repl}"
             end
@@ -209,18 +195,18 @@ function latex_diacritics(chars::AbstractVector)
             end
         end
     end
-    out
+    return out
 end
 
 function latex_emphasis(chars::AbstractVector)
     out = []
-    for ((em, _), f) ∈ emphases
+    for ((em, _), f) in emphases
         isempty(em) && continue
-        for c ∈ chars
+        for c in chars
             push!(out, f(c) => isempty(em) ? c : "\\$em{$c}")
         end
     end
-    filter(p -> isprint(p.first), out)
+    return filter(p -> isprint(p.first), out)
 end
 
 # [`LaTeX`] https://tug.ctan.org/info/symbols/comprehensive/symbols-a4.pdf
@@ -248,7 +234,7 @@ end
 # \mathbffrak Bold Fraktur              ✔
 # [`amssymb`] https://mirrors.ctan.org/fonts/amsfonts/doc/amssymb.pdf
 
-const unicodedict = OrderedDict{Union{Char,String}, String}(
+const unicodedict = OrderedDict{Union{Char,String},String}(
     # ↓↓↓ unicode, in increasing order (see https://docs.julialang.org/en/v1/manual/unicode-input)
     # commented lines are either unsupported in `LaTeX` (or only through a package such as `marvosym` for e.g. `\jupiter`)
     # or don't make sense here (letter modifiers such as `\enclosecircle`)
@@ -1763,11 +1749,12 @@ function unicode2latex(str::String; safescripts=false)
         c = popfirst!(it)
         push!(
             c_or_s,  # see en.wikipedia.org/wiki/Combining_character
-            if Unicode.category_code(something(peek(it), '0')) == Unicode.UTF8PROC_CATEGORY_MN
+            if Unicode.category_code(something(peek(it), '0')) ==
+                Unicode.UTF8PROC_CATEGORY_MN
                 c * popfirst!(it)
             else
                 c
-            end
+            end,
         )
     end
     str_array = map(k -> get(unicodedict, k, k), c_or_s)
@@ -1853,5 +1840,4 @@ function merge_subscripts(str; safescripts=false)
         str = replace(str, r"{_([^{}]*)}" => s"_\1")
     end
     return str
-
 end

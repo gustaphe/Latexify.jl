@@ -6,7 +6,6 @@ get_latex_function(r::DiffEqBase.AbstractReactionNetwork) = latexalign
 
 get_md_function(args::DiffEqBase.AbstractReactionNetwork) = mdalign
 
-
 ###############################################
 #         Overload environment functions      #
 ###############################################
@@ -22,7 +21,14 @@ Generate an align environment from a reaction network.
 - bracket::Bool - Surround the variables with square brackets to denote concentrations.
 - clean::Bool - Clean out redundant "1*". Only useful for DiffEqBiological@v3.4.2 or earlier.
 """
-function latexalign(r::DiffEqBase.AbstractReactionNetwork; bracket=false, noise=false, symbolic=false, clean=false, kwargs...)
+function latexalign(
+    r::DiffEqBase.AbstractReactionNetwork;
+    bracket=false,
+    noise=false,
+    symbolic=false,
+    clean=false,
+    kwargs...,
+)
     lhs = [Meta.parse("d$x/dt") for x in r.syms]
     if !noise
         if symbolic
@@ -37,8 +43,8 @@ function latexalign(r::DiffEqBase.AbstractReactionNetwork; bracket=false, noise=
     else
         vec = r.g_func
         M = reshape(vec, :, length(r.syms))
-        M = permutedims(M, [2,1])
-        expr_arr = Meta.parse.([join(M[i,:], " + ") for i in 1:size(M,1)])
+        M = permutedims(M, [2, 1])
+        expr_arr = Meta.parse.([join(M[i, :], " + ") for i in 1:size(M, 1)])
 
         if symbolic
             rhs = [SymEngine.Basic(ex) for ex in expr_arr]
@@ -51,20 +57,25 @@ function latexalign(r::DiffEqBase.AbstractReactionNetwork; bracket=false, noise=
     end
     if bracket
         rhs = add_brackets(rhs, r.syms)
-        lhs = [:(d[$x]/dt) for x in r.syms]
+        lhs = [:(d[$x] / dt) for x in r.syms]
     end
     return latexalign(lhs, rhs; kwargs...)
 end
 
-chemical_arrows(args...; kwargs...) = process_latexify(args...;kwargs..., env=:arrows)
+chemical_arrows(args...; kwargs...) = process_latexify(args...; kwargs..., env=:arrows)
 
-function _chemical_arrows(rn::DiffEqBase.AbstractReactionNetwork;
-    expand = true, double_linebreak=false, mathjax=true, starred=false, kwargs...)
+function _chemical_arrows(
+    rn::DiffEqBase.AbstractReactionNetwork;
+    expand=true,
+    double_linebreak=false,
+    mathjax=true,
+    starred=false,
+    kwargs...,
+)
     str = starred ? "\\begin{align*}\n" : "\\begin{align}\n"
     eol = double_linebreak ? "\\\\\\\\\n" : "\\\\\n"
 
     mathjax && (str *= "\\require{mhchem}\n")
-
 
     backwards_reaction = false
     for (i, r) in enumerate(rn.reactions)
@@ -80,15 +91,22 @@ function _chemical_arrows(rn::DiffEqBase.AbstractReactionNetwork;
         expand && (rate = DiffEqBiological.recursive_clean!(rate))
 
         ### Generate formatted string of substrates
-        substrates = [latexraw("$(substrate.stoichiometry== 1 ? "" : "$(substrate.stoichiometry) * ") $(substrate.reactant)"; kwargs...) for substrate in r.substrates ]
+        substrates = [
+            latexraw(
+                "$(substrate.stoichiometry== 1 ? "" : "$(substrate.stoichiometry) * ") $(substrate.reactant)";
+                kwargs...,
+            ) for substrate in r.substrates
+        ]
         isempty(substrates) && (substrates = ["\\varnothing"])
 
         str *= join(substrates, " + ")
 
         ### Generate reaction arrows
-        if i + 1 <= length(rn.reactions) && r.products == rn.reactions[i+1].substrates && r.substrates == rn.reactions[i+1].products
+        if i + 1 <= length(rn.reactions) &&
+            r.products == rn.reactions[i + 1].substrates &&
+            r.substrates == rn.reactions[i + 1].products
             ### Bi-directional arrows
-            rate_backwards = deepcopy(rn.reactions[i+1].rate_org)
+            rate_backwards = deepcopy(rn.reactions[i + 1].rate_org)
             expand && (rate_backwards = DiffEqBiological.recursive_clean!(rate_backwards))
             expand && (rate_backwards = DiffEqBiological.recursive_clean!(rate_backwards))
             str *= " &<=>"
@@ -102,12 +120,17 @@ function _chemical_arrows(rn::DiffEqBase.AbstractReactionNetwork;
         end
 
         ### Generate formatted string of products
-        products = [latexraw("$(product.stoichiometry== 1 ? "" : "$(product.stoichiometry) * ") $(product.reactant)"; kwargs...) for product in r.products ]
+        products = [
+            latexraw(
+                "$(product.stoichiometry== 1 ? "" : "$(product.stoichiometry) * ") $(product.reactant)";
+                kwargs...,
+            ) for product in r.products
+        ]
         isempty(products) && (products = ["\\varnothing"])
         str *= join(products, " + ")
         str *= "}$eol"
     end
-    str = str[1:end-length(eol)] * "\n"
+    str = str[1:(end - length(eol))] * "\n"
 
     str *= starred ? "\\end{align*}\n" : "\\end{align}\n"
 
@@ -115,8 +138,6 @@ function _chemical_arrows(rn::DiffEqBase.AbstractReactionNetwork;
     COPY_TO_CLIPBOARD && clipboard(latexstr)
     return latexstr
 end
-
-
 
 """
 clean_subtractions(ex::Expr)
@@ -138,11 +159,10 @@ function clean_subtractions(ex::Expr)
 
     ### Sort out the first term
     if term isa Expr && length(term.args) >= 3 && term.args[1:2] == [:*, -1]
-        result = :(- *($(term.args[3:end]...)))
+        result = :(-*($(term.args[3:end]...)))
     else
         result = :($term)
     end
-
 
     ### Sort out the other terms
     for term in ex.args[3:end]

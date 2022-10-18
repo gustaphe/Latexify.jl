@@ -3,12 +3,16 @@
 ##################################################
 
 get_latex_function(ode::DiffEqBase.AbstractParameterizedFunction) = latexalign
-function get_latex_function(x::AbstractArray{T}) where T <: DiffEqBase.AbstractParameterizedFunction
+function get_latex_function(
+    x::AbstractArray{T}
+) where {T<:DiffEqBase.AbstractParameterizedFunction}
     return latexalign
 end
 
 get_md_function(args::DiffEqBase.AbstractParameterizedFunction) = mdalign
-function get_md_function(x::AbstractArray{T}) where T <: DiffEqBase.AbstractParameterizedFunction
+function get_md_function(
+    x::AbstractArray{T}
+) where {T<:DiffEqBase.AbstractParameterizedFunction}
     return mdalign
 end
 
@@ -22,19 +26,23 @@ function latexraw(ode::DiffEqBase.AbstractParameterizedFunction; kwargs...)
     return lhs .* rhs
 end
 
-
 function latexinline(ode::DiffEqBase.AbstractParameterizedFunction; kwargs...)
     lhs = ["\\frac{d$x}{dt} = " for x in ode.syms]
     rhs = latexraw(ode.funcs; kwargs...)
-    return latexstring.( lhs .* rhs )
+    return latexstring.(lhs .* rhs)
 end
 
-function latexalign(ode::DiffEqBase.AbstractParameterizedFunction; field::Symbol=:funcs, bracket=false, kwargs...)
+function latexalign(
+    ode::DiffEqBase.AbstractParameterizedFunction;
+    field::Symbol=:funcs,
+    bracket=false,
+    kwargs...,
+)
     lhs = [Meta.parse("d$x/dt") for x in ode.syms]
     rhs = getfield(ode, field)
     if bracket
         rhs = add_brackets(rhs, ode.syms)
-        lhs = [:(d[$x]/dt) for x in ode.syms]
+        lhs = [:(d[$x] / dt) for x in ode.syms]
     end
     return latexalign(lhs, rhs; kwargs...)
 end
@@ -44,7 +52,9 @@ latexalign(odearray; field=:funcs)
 
 Display ODEs side-by-side.
 """
-function latexalign(odearray::AbstractVector{T}; field::Symbol=:funcs, kwargs...) where T<:DiffEqBase.AbstractParameterizedFunction
+function latexalign(
+    odearray::AbstractVector{T}; field::Symbol=:funcs, kwargs...
+) where {T<:DiffEqBase.AbstractParameterizedFunction}
     a = []
     maxrows = maximum(length.(getfield.(odearray, :syms)))
 
@@ -60,8 +70,8 @@ function latexalign(odearray::AbstractVector{T}; field::Symbol=:funcs, kwargs...
             ### This breaks type-safety, but I don't think that it will be a bottle neck for anyone.
             lhs = [lhs; fill(blank, maxrows - nr_eq)]
             rhs = [rhs; fill(blank, maxrows - nr_eq)]
-            first_separator = [first_separator; fill(LaTeXString(" & "), maxrows-nr_eq)]
-            second_separator = [second_separator; fill(LaTeXString(" & "), maxrows-nr_eq)]
+            first_separator = [first_separator; fill(LaTeXString(" & "), maxrows - nr_eq)]
+            second_separator = [second_separator; fill(LaTeXString(" & "), maxrows - nr_eq)]
         end
 
         append!(a, [lhs, first_separator, rhs, second_separator])

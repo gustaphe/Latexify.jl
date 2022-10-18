@@ -99,7 +99,13 @@ macro latexdefine(expr, kwargs...)
             :call,
             :latexify,
             Expr(:parameters, _extractparam.(kwargs)...),
-            Expr(:call, :Expr, QuoteNode(:(=)), Meta.quot(expr), Expr(:call, post, _executable(expr))),
+            Expr(
+                :call,
+                :Expr,
+                QuoteNode(:(=)),
+                Meta.quot(expr),
+                Expr(:call, post, _executable(expr)),
+            ),
         ),
     )
 end

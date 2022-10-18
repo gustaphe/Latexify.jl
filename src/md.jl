@@ -1,5 +1,4 @@
 
-
 function md(args...; env=:auto, kwargs...)
     md_function = infer_md_output(env, args...)
 
@@ -14,12 +13,12 @@ mdarray(args...; kwargs...) = latexarray(args...; kwargs...)
 md_chemical_arrows(args...; kwargs...) = chemical_arrows(args...; kwargs...)
 
 const MDOUTPUTS = Dict(
-                       :table => mdtable,
-                       :text => mdtext,
-                       :align => mdalign,
-                       :array => mdarray,
-                       :inline => latexinline
-                      )
+    :table => mdtable,
+    :text => mdtext,
+    :align => mdalign,
+    :array => mdarray,
+    :inline => latexinline,
+)
 function infer_md_output(env, args...)
     env === :auto && return get_md_function(args...)
     env in [:arrows, :chem, :chemical, :arrow] && return md_chemical_arrows

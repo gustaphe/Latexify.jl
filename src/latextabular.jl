@@ -1,7 +1,16 @@
 latextabular(args...; kwargs...) = process_latexify(args...; kwargs..., env=:tabular)
 
-function _latextabular(arr::AbstractMatrix; latex::Bool=true, booktabs::Bool=false, head=[], side=[], adjustment=:c, transpose=false, kwargs...)
-    transpose && (arr = permutedims(arr, [2,1]))
+function _latextabular(
+    arr::AbstractMatrix;
+    latex::Bool=true,
+    booktabs::Bool=false,
+    head=[],
+    side=[],
+    adjustment=:c,
+    transpose=false,
+    kwargs...,
+)
+    transpose && (arr = permutedims(arr, [2, 1]))
 
     if !isempty(head)
         arr = vcat(safereduce(hcat, head), arr)
@@ -29,12 +38,13 @@ function _latextabular(arr::AbstractMatrix; latex::Bool=true, booktabs::Bool=fal
     if latex
         arr = latexinline.(arr; kwargs...)
     elseif haskey(kwargs, :fmt)
-        formatter = kwargs[:fmt] isa String ? PrintfNumberFormatter(kwargs[:fmt]) : kwargs[:fmt]
+        formatter =
+            kwargs[:fmt] isa String ? PrintfNumberFormatter(kwargs[:fmt]) : kwargs[:fmt]
         arr = map(x -> x isa Number ? formatter(x) : x, arr)
     end
 
     # print first row
-    str *= join(arr[1,:], " & ")
+    str *= join(arr[1, :], " & ")
     str *= "\\\\\n"
 
     if booktabs && !isempty(head)
@@ -42,7 +52,7 @@ function _latextabular(arr::AbstractMatrix; latex::Bool=true, booktabs::Bool=fal
     end
 
     for i in 2:size(arr, 1)
-        str *= join(arr[i,:], " & ")
+        str *= join(arr[i, :], " & ")
         str *= "\\\\\n"
     end
 
@@ -56,7 +66,12 @@ function _latextabular(arr::AbstractMatrix; latex::Bool=true, booktabs::Bool=fal
     return latexstr
 end
 
-
-_latextabular(vec::AbstractVector; kwargs...) = latextabular(safereduce(hcat, vec); kwargs...)
-_latextabular(vectors::AbstractVector...; kwargs...) = latextabular(safereduce(hcat, vectors); kwargs...)
-_latextabular(dict::AbstractDict; kwargs...) = latextabular(hcat(collect(keys(dict)), collect(values(dict))); kwargs...)
+function _latextabular(vec::AbstractVector; kwargs...)
+    return latextabular(safereduce(hcat, vec); kwargs...)
+end
+function _latextabular(vectors::AbstractVector...; kwargs...)
+    return latextabular(safereduce(hcat, vectors); kwargs...)
+end
+function _latextabular(dict::AbstractDict; kwargs...)
+    return latextabular(hcat(collect(keys(dict)), collect(values(dict))); kwargs...)
+end

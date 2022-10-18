@@ -1,4 +1,4 @@
-const default_kwargs = Dict{Symbol, Any}()
+const default_kwargs = Dict{Symbol,Any}()
 
 """
     set_default(; kwargs...)
@@ -37,5 +37,5 @@ Get a Dict with the user-specified default kwargs for latexify, set by `set_defa
 function get_default end
 get_default() = default_kwargs
 get_default(arg::Symbol) = default_kwargs[arg]
-get_default(args::AbstractArray) =  map(x->default_kwargs[x], args)
+get_default(args::AbstractArray) = map(x -> default_kwargs[x], args)
 get_default(args...) = Tuple(get_default(arg) for arg in args)

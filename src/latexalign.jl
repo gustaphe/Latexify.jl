@@ -41,7 +41,15 @@ julia> latexalign(ode)
 """
 latexalign(args...; kwargs...) = process_latexify(args...; kwargs..., env=:align)
 
-function _latexalign(arr::AbstractMatrix; separator=" =& ", double_linebreak=false, starred=false, rows=:all, aligned=false, kwargs...)
+function _latexalign(
+    arr::AbstractMatrix;
+    separator=" =& ",
+    double_linebreak=false,
+    starred=false,
+    rows=:all,
+    aligned=false,
+    kwargs...,
+)
     eol = double_linebreak ? " \\\\\\\\\n" : " \\\\\n"
     arr = latexraw.(arr; kwargs...)
     separator isa String && (separator = fill(separator, size(arr)[1]))
@@ -59,9 +67,9 @@ function _latexalign(arr::AbstractMatrix; separator=" =& ", double_linebreak=fal
 
     for i in iterate_rows
         if i != last(iterate_rows)
-            str *= join(arr[i,:], separator[i]) * eol
+            str *= join(arr[i, :], separator[i]) * eol
         else
-            str *= join(arr[i,:], separator[i]) * "\n"
+            str *= join(arr[i, :], separator[i]) * "\n"
         end
     end
     if aligned
@@ -82,16 +90,20 @@ function _latexalign(lhs::Tuple, rhs::Tuple; kwargs...)
     return latexalign(hcat(collect(lhs), collect(rhs)); kwargs...)
 end
 
-_latexalign(args::Tuple...; kwargs...) = latexalign(safereduce(hcat, [collect(i) for i in args]); kwargs...)
+function _latexalign(args::Tuple...; kwargs...)
+    return latexalign(safereduce(hcat, [collect(i) for i in args]); kwargs...)
+end
 
-_latexalign(arg::Tuple; kwargs...) = latexalign(safereduce(hcat, [collect(i) for i in arg]); kwargs...)
+function _latexalign(arg::Tuple; kwargs...)
+    return latexalign(safereduce(hcat, [collect(i) for i in arg]); kwargs...)
+end
 
 function _latexalign(nested::AbstractVector{AbstractVector}; kwargs...)
     return latexalign(safereduce(hcat, nested); kwargs...)
 end
 
 function _latexalign(d::AbstractDict; kwargs...)
-    latexalign(collect(keys(d)), collect(values(d)); kwargs...)
+    return latexalign(collect(keys(d)), collect(values(d)); kwargs...)
 end
 
 """
@@ -104,7 +116,7 @@ function _latexalign(vec::AbstractVector; kwargs...)
     ## turn the array into a matrix
     lmat = safereduce(hcat, split.(lvec, " = "))
     ## turn the matrix ito arrays of left-hand-side, right-hand-side.
-    larr = [lmat[i,:] for i in 1:size(lmat, 1)]
+    larr = [lmat[i, :] for i in 1:size(lmat, 1)]
     length(larr) < 2 && error("Invalid intput to _latexalign().")
-    return latexalign( safereduce(hcat, larr) ; kwargs...)
+    return latexalign(safereduce(hcat, larr); kwargs...)
 end

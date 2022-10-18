@@ -2,7 +2,6 @@
 #   Override default handling (default = inline) #
 ##################################################
 
-
 ###############################################
 #         Overload environment functions      #
 ###############################################
@@ -10,7 +9,7 @@
 function latexraw(x::SymEngine.Basic; kwargs...)
     str = string(x)
     ex = Meta.parse(str)
-    latexraw(ex; kwargs...)
+    return latexraw(ex; kwargs...)
 end
 
 ###############################################

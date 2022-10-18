@@ -16,7 +16,9 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
 
     op = ex.args[1]
     filter!(x -> !(x isa LineNumberNode), ex.args)
-    args = map(i -> typeof(i) ∉ (String, LineNumberNode) ? latexraw(i; kwargs...) : i, ex.args)
+    args = map(
+        i -> typeof(i) ∉ (String, LineNumberNode) ? latexraw(i; kwargs...) : i, ex.args
+    )
 
     # Remove math italics for variables (i.e. words) longer than 2 characters.
     # args = map(i -> (i isa String && all(map(isletter, collect(i))) && length(i) > 2) ? "{\\rm $i}" : i, args)
@@ -33,10 +35,13 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         return "\\frac{$(args[2])}{$(args[3])}"
 
     elseif op in [:*, :.*]
-        str=""
+        str = ""
         for i in 2:length(args)
             arg = args[i]
-            (prevOp[i] in [:+, :-, :±, :.+, :.-, :.±] || (ex.args[i] isa Complex && !iszero(ex.args[i].re))) && (arg = "\\left( $arg \\right)")
+            (
+                prevOp[i] in [:+, :-, :±, :.+, :.-, :.±] ||
+                (ex.args[i] isa Complex && !iszero(ex.args[i].re))
+            ) && (arg = "\\left( $arg \\right)")
             str = string(str, arg)
             i != length(args) && (str *= cdot ? " \\cdot " : " ")
         end
@@ -44,8 +49,8 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
 
     elseif op in [:+, :.+]
         str = join(args[2:end], " + ")
-        str = replace(str, "+  -"=>"-")
-        str = replace(str, "+ -"=>"-")
+        str = replace(str, "+  -" => "-")
+        str = replace(str, "+ -" => "-")
         return str
 
     elseif op in [:±, :.±]
@@ -57,12 +62,16 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
                 return " + " * string(args[2])[2:end]
             elseif prevOp[2] == :none && string(args[2])[1] == '+'
                 return " - " * string(args[2])[2:end]
-            elseif prevOp[2] in [:+, :-, :±, :.+, :.-, :.±] || (ex.args[2] isa Complex && !iszero(ex.args[2].re))
+            elseif prevOp[2] in [:+, :-, :±, :.+, :.-, :.±] ||
+                (ex.args[2] isa Complex && !iszero(ex.args[2].re))
                 return " - \\left( $(args[2]) \\right)"
             end
             return " - $(args[2])"
         end
-        (prevOp[3] in [:+, :-, :±, :.+, :.-, :.±] || (ex.args[3] isa Complex && !iszero(ex.args[3].re))) && (args[3] = "\\left( $(args[3]) \\right)")
+        (
+            prevOp[3] in [:+, :-, :±, :.+, :.-, :.±] ||
+            (ex.args[3] isa Complex && !iszero(ex.args[3].re))
+        ) && (args[3] = "\\left( $(args[3]) \\right)")
 
         if prevOp[3] == :none && string(args[3])[1] == '-'
             return "$(args[2]) + " * string(args[3])[2:end]
@@ -75,8 +84,11 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
             str = get(function2latex, prevOp[2], "\\$(prevOp[2])")
             return replace(args[2], str => "$(str)^{$(args[3])}")
         end
-        if (prevOp[2] != :none) || (ex.args[2] isa Real && sign(ex.args[2]) == -1) || (ex.args[2] isa Complex && !iszero(ex.args[2].re)) || (ex.args[2] isa Rational)
-            args[2]="\\left( $(args[2]) \\right)"
+        if (prevOp[2] != :none) ||
+            (ex.args[2] isa Real && sign(ex.args[2]) == -1) ||
+            (ex.args[2] isa Complex && !iszero(ex.args[2].re)) ||
+            (ex.args[2] isa Rational)
+            args[2] = "\\left( $(args[2]) \\right)"
         end
         return "$(args[2])^{$(args[3])}"
     elseif (ex.head in (:(=), :function)) && length(args) == 2
@@ -106,7 +118,7 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         :.>= => "\\geq",
         :!= => "\\neq",
         :.!= => "\\neq",
-        )
+    )
 
     if op in keys(comparison_operators) && length(args) == 3
         str = "$(args[2]) $(comparison_operators[op]) $(args[3])"
@@ -116,7 +128,13 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
 
     ### Check for chained comparison operators
     if ex.head == :comparison && Symbol.(args[2:2:end]) ⊆ keys(comparison_operators)
-        str = join([isodd(i) ? "$var" : comparison_operators[var] for (i, var) in enumerate(Symbol.(args))], " ")
+        str = join(
+            [
+                isodd(i) ? "$var" : comparison_operators[var] for
+                (i, var) in enumerate(Symbol.(args))
+            ],
+            " ",
+        )
         str = "\\left( $str \\right)"
         return str
     end
@@ -152,7 +170,11 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
             argstring = join(args[2:end], ", ")
             return "$opname\\left[$argstring\\right]"
         else
-            throw(ArgumentError("Incorrect `index` keyword argument to latexify. Valid values are :subscript and :bracket"))
+            throw(
+                ArgumentError(
+                    "Incorrect `index` keyword argument to latexify. Valid values are :subscript and :bracket",
+                ),
+            )
         end
     end
 
@@ -216,8 +238,6 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
     ex.head == :(&&) && length(args) == 2 && return "$(args[1]) \\wedge $(args[2])"
     ex.head == :(||) && length(args) == 2 && return "$(args[1]) \\vee $(args[2])"
 
-
-
     ## if we have reached this far without a return, then error.
     error("Latexify.jl's latexoperation does not know what to do with one of the
           expressions provided ($ex).")
@@ -225,7 +245,6 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
 end
 
 latexoperation(sym::Symbol, prevOp::AbstractArray; kwargs...) = "$sym"
-
 
 function convert_subscript!(ex::Expr, kwargs...)
     for i in 1:length(ex.args)

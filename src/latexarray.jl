@@ -12,10 +12,16 @@ latexarray(arr)
 "\\begin{equation}\n\\left[\n\\begin{array}{cc}\n1 & 2\\\\ \n3 & 4\\\\ \n\\end{array}\n\\right]\n\\end{equation}\n"
 ```
 """
-latexarray(args...; kwargs...) = process_latexify(args...;kwargs...,env=:array)
+latexarray(args...; kwargs...) = process_latexify(args...; kwargs..., env=:array)
 
-function _latexarray(arr::AbstractArray; adjustment=:c, transpose=false, double_linebreak=false,
-    starred=false, kwargs...)
+function _latexarray(
+    arr::AbstractArray;
+    adjustment=:c,
+    transpose=false,
+    double_linebreak=false,
+    starred=false,
+    kwargs...,
+)
     transpose && (arr = permutedims(arr))
     rows, columns = axes(arr, 1), axes(arr, 2)
 
@@ -32,7 +38,7 @@ function _latexarray(arr::AbstractArray; adjustment=:c, transpose=false, double_
 
     arr = latexraw.(arr; kwargs...)
     for i in rows, j in columns
-        str *= arr[i,j]
+        str *= arr[i, j]
         j == last(columns) ? (str *= eol) : (str *= " & ")
     end
 
@@ -43,9 +49,12 @@ function _latexarray(arr::AbstractArray; adjustment=:c, transpose=false, double_
     return latexstr
 end
 
-
-_latexarray(args::AbstractArray...; kwargs...) = _latexarray(safereduce(hcat, args); kwargs...)
-_latexarray(arg::AbstractDict; kwargs...) = _latexarray(collect(keys(arg)), collect(values(arg)); kwargs...)
+function _latexarray(args::AbstractArray...; kwargs...)
+    return _latexarray(safereduce(hcat, args); kwargs...)
+end
+function _latexarray(arg::AbstractDict; kwargs...)
+    return _latexarray(collect(keys(arg)), collect(values(arg)); kwargs...)
+end
 _latexarray(arg::Tuple...; kwargs...) = _latexarray([collect(i) for i in arg]...; kwargs...)
 
 function _latexarray(arg::Tuple; kwargs...)

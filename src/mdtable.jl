@@ -55,12 +55,22 @@ julia> mdtable(M; head=latexinline(head))
 """
 function mdtable end
 
-function mdtable(M::AbstractMatrix; latex::Bool=true, escape_underscores=false, head=[], side=[], transpose=false, adjustment=nothing, kwargs...)
-    transpose && (M = permutedims(M, [2,1]))
+function mdtable(
+    M::AbstractMatrix;
+    latex::Bool=true,
+    escape_underscores=false,
+    head=[],
+    side=[],
+    transpose=false,
+    adjustment=nothing,
+    kwargs...,
+)
+    transpose && (M = permutedims(M, [2, 1]))
     if latex
         M = _latexinline.(M; kwargs...)
     elseif haskey(kwargs, :fmt)
-        formatter = kwargs[:fmt] isa String ? PrintfNumberFormatter(kwargs[:fmt]) : kwargs[:fmt]
+        formatter =
+            kwargs[:fmt] isa String ? PrintfNumberFormatter(kwargs[:fmt]) : kwargs[:fmt]
         M = map(x -> x isa Number ? formatter(x) : x, M)
     end
 
@@ -80,13 +90,13 @@ function mdtable(M::AbstractMatrix; latex::Bool=true, escape_underscores=false, 
         headerrules = fill(get_header_rule(adjustment), size(M, 2))
     end
 
-    t = "| " * join(M[1,:], " | ") * " |\n"
+    t = "| " * join(M[1, :], " | ") * " |\n"
     size(M, 1) > 1 && (t *= "| " * join(headerrules, " | ") * " |\n")
-    for i in 2:size(M,1)
-        t *= "| " * join(M[i,:], " | ") * " |\n"
+    for i in 2:size(M, 1)
+        t *= "| " * join(M[i, :], " | ") * " |\n"
     end
 
-    escape_underscores && (t = replace(t, "_"=>"\\_"))
+    escape_underscores && (t = replace(t, "_" => "\\_"))
     t = Markdown.parse(t)
     COPY_TO_CLIPBOARD && clipboard(t)
     return t
@@ -94,14 +104,17 @@ end
 
 mdtable(v::AbstractArray; kwargs...) = mdtable(reshape(v, (length(v), 1)); kwargs...)
 mdtable(v::AbstractArray...; kwargs...) = mdtable(safereduce(hcat, v); kwargs...)
-mdtable(d::AbstractDict; kwargs...) = mdtable(collect(keys(d)), collect(values(d)); kwargs...)
-mdtable(arg::Tuple; kwargs...) = mdtable(safereduce(hcat, [collect(i) for i in arg]); kwargs...)
+function mdtable(d::AbstractDict; kwargs...)
+    return mdtable(collect(keys(d)), collect(values(d)); kwargs...)
+end
+function mdtable(arg::Tuple; kwargs...)
+    return mdtable(safereduce(hcat, [collect(i) for i in arg]); kwargs...)
+end
 
 get_header_rule(::Nothing) = "-------"
 function get_header_rule(adjustment::Symbol)
     adjustment === :c && return ":----:"
     adjustment === :l && return ":-----"
     adjustment === :r && return "-----:"
-    error("Unknown `adjustment` argument \"$adjustment\"")
+    return error("Unknown `adjustment` argument \"$adjustment\"")
 end
-

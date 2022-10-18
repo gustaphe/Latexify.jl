@@ -4,6 +4,7 @@
 using Latexify
 using LaTeXStrings
 using Test
+using JuliaFormatter
 
 # Run tests
 
@@ -24,3 +25,4 @@ using Test
 @testset "cdot test" begin include("cdot_test.jl") end
 @testset "numberformatters" begin include("numberformatters_test.jl") end
 @testset "utils test" begin include("utils_test.jl") end
+@testset "formatting" begin @test format(Latexify; overwrite=false) end

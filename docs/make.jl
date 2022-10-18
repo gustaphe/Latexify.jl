@@ -3,11 +3,13 @@ using Latexify
 using LaTeXStrings
 
 Base.show(io::IO, ::MIME"text/html", l::LaTeXString) = l.s
-makedocs(
-    modules = [Latexify],
-    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true", mathengine = MathJax3()),
-    sitename = "Latexify.jl",
-    pages = [
+makedocs(;
+    modules=[Latexify],
+    format=Documenter.HTML(;
+        prettyurls=get(ENV, "CI", nothing) == "true", mathengine=MathJax3()
+    ),
+    sitename="Latexify.jl",
+    pages=[
         "index.md",
         # "Functions" => [
         #     "tutorials/latexify.md",
@@ -17,25 +19,22 @@ makedocs(
         #     "tutorials/latextabular.md"
         # ],
         "tutorials/recipes.md",
-        "Use with other packages" => [
-            "tutorials/parameterizedfunctions.md",
-            "tutorials/DiffEqBiological.md"
-        ],
+        "Use with other packages" =>
+            ["tutorials/parameterizedfunctions.md", "tutorials/DiffEqBiological.md"],
         "tutorials/notebooks.md",
         "arguments.md",
         "tutorials/inner_workings.md",
     ],
-    doctest = false,
+    doctest=false,
 )
 
-deploydocs(
+deploydocs(;
     #deps = Deps.pip("mkdocs", "python-markdown-math"),
-    repo = "github.com/korsbo/Latexify.jl.git",
-    target = "build",
+    repo="github.com/korsbo/Latexify.jl.git",
+    target="build",
     # make = nothing,
     # deps = nothing,
-    )
-
+)
 
 # Documenter can also automatically deploy documentation to gh-pages.
 # See "Hosting Documentation" and deploydocs() in the Documenter manual

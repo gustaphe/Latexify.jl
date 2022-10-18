@@ -6,20 +6,19 @@ struct PlainNumberFormatter <: AbstractNumberFormatter end
 
 (::PlainNumberFormatter)(x) = string(x)
 
-
 struct PrintfNumberFormatter <: AbstractNumberFormatter
     fmt::String
     f::Function
 end
-PrintfNumberFormatter(fmt::String) = PrintfNumberFormatter(fmt, Formatting.generate_formatter(fmt))
+function PrintfNumberFormatter(fmt::String)
+    return PrintfNumberFormatter(fmt, Formatting.generate_formatter(fmt))
+end
 (f::PrintfNumberFormatter)(x) = f.f(x)
-
 
 struct StyledNumberFormatter <: AbstractNumberFormatter
     fmt::String
 
     StyledNumberFormatter(fmt::String="%.4g") = new(fmt)
-
 end
 
 function StyledNumberFormatter(significant_digits::Int)
@@ -29,24 +28,34 @@ end
 (f::StyledNumberFormatter)(x) = string(x)
 function (f::StyledNumberFormatter)(x::AbstractFloat)
     s = @eval @sprintf $(f.fmt) $x
-    return replace(s, float_regex => s"\g<mantissa> \\mathrm{\g<e_or_E>}{\g<sign_exp>\g<mag_exp>}")
+    return replace(
+        s, float_regex => s"\g<mantissa> \\mathrm{\g<e_or_E>}{\g<sign_exp>\g<mag_exp>}"
+    )
 end
 
-(f::StyledNumberFormatter)(x::Unsigned) = "\\mathtt{0x$(string(x; base=16, pad=2sizeof(x)))}"
-
+function (f::StyledNumberFormatter)(x::Unsigned)
+    return "\\mathtt{0x$(string(x; base=16, pad=2sizeof(x)))}"
+end
 
 struct FancyNumberFormatter <: AbstractNumberFormatter
     fmt::String
     exponent_format::SubstitutionString
 
-    function FancyNumberFormatter(fmt::String="%.4g",
-                                  exponent_format::SubstitutionString=s"\g<mantissa> \\cdot 10^{\g<sign_exp>\g<mag_exp>}")
+    function FancyNumberFormatter(
+        fmt::String="%.4g",
+        exponent_format::SubstitutionString=s"\g<mantissa> \\cdot 10^{\g<sign_exp>\g<mag_exp>}",
+    )
         return new(fmt, exponent_format)
     end
 end
 
 function FancyNumberFormatter(fmt::String, mult_symbol)
-    return FancyNumberFormatter(fmt, SubstitutionString("\\g<mantissa> $(escape_string(mult_symbol)) 10^{\\g<sign_exp>\\g<mag_exp>}"))
+    return FancyNumberFormatter(
+        fmt,
+        SubstitutionString(
+            "\\g<mantissa> $(escape_string(mult_symbol)) 10^{\\g<sign_exp>\\g<mag_exp>}"
+        ),
+    )
 end
 function FancyNumberFormatter(significant_digits, mult_symbol="\\cdot")
     return FancyNumberFormatter("%.$(significant_digits)g", mult_symbol)

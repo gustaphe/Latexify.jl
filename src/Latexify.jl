@@ -4,12 +4,22 @@ using LaTeXStrings
 using InteractiveUtils
 using Markdown
 using MacroTools: postwalk
-import MacroTools
+using MacroTools: MacroTools
 using Printf
 using Formatting
 
-export latexify, md, copy_to_clipboard, auto_display, set_default, get_default,
-    reset_default, @latexrecipe, render, @latexify, @latexrun, @latexdefine
+export latexify,
+    md,
+    copy_to_clipboard,
+    auto_display,
+    set_default,
+    get_default,
+    reset_default,
+    @latexrecipe,
+    render,
+    @latexify,
+    @latexrun,
+    @latexdefine
 
 ## Allow some backwards compatibility until its time to deprecate.
 export latexequation, latexarray, latexalign, latexraw, latexinline, latextabular, mdtable
@@ -18,12 +28,12 @@ export StyledNumberFormatter, FancyNumberFormatter
 
 COPY_TO_CLIPBOARD = false
 function copy_to_clipboard(x::Bool)
-    global COPY_TO_CLIPBOARD = x
+    return global COPY_TO_CLIPBOARD = x
 end
 
 AUTO_DISPLAY = false
 function auto_display(x::Bool)
-    global AUTO_DISPLAY = x
+    return global AUTO_DISPLAY = x
 end
 
 const DEFAULT_DPI = Ref(300)
@@ -69,7 +79,9 @@ function __init__()
 end
 
 macro generate_test(expr)
-    return :(clipboard("@test $($(string(expr))) == replace(\nraw\"$($(esc(expr)))\", \"\\r\\n\"=>\"\\n\")\n"))
+    return :(clipboard(
+        "@test $($(string(expr))) == replace(\nraw\"$($(esc(expr)))\", \"\\r\\n\"=>\"\\n\")\n",
+    ))
 end
 
 """
@@ -93,11 +105,11 @@ Latexify.@append_latexify_test!("./tests/latexify_tests.jl", latexify(:(x/y))) |
 macro append_latexify_test!(fname, expr)
     fname = esc(fname)
     return :(
-    str = "@test $($(string(expr))) == replace(\nraw\"$($(esc(expr)))\", \"\\r\\n\"=>\"\\n\")\n\n";
-    open($fname, "a") do f
-        write(f,str)
-    end;
-    $(esc(expr))
+        str = "@test $($(string(expr))) == replace(\nraw\"$($(esc(expr)))\", \"\\r\\n\"=>\"\\n\")\n\n";
+        open($fname, "a") do f
+            write(f, str)
+        end;
+        $(esc(expr))
     )
 end
 
@@ -118,13 +130,11 @@ macro append_test!(fname, str)
     fname = esc(fname)
     returnobj = str isa String ? Meta.parse(str) : str
     printobj = str isa String ? str : string(MacroTools.striplines(str))
-    return :(
-    open($fname, "a") do f
+    return :(open($fname, "a") do f
         write(f, $(esc(printobj)))
         write(f, "\n\n")
     end;
-    $(esc(returnobj))
-    )
+    $(esc(returnobj)))
 end
 
 end

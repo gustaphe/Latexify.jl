@@ -59,16 +59,21 @@ latexraw(args...; kwargs...) = process_latexify(args...; kwargs..., env=:raw)
 
 function _latexraw(inputex::Expr; convert_unicode=true, kwargs...)
     ## Pass all arrays or matrices in the expr to latexarray
-    inputex = postwalk(x -> Meta.isexpr(x, [:hcat, :vcat, :vect, :typed_vcat, :typed_hcat]) ?
-                       latexarray(expr_to_array(x); kwargs...)
-                       : x,
-                       inputex)
+    inputex = postwalk(
+        x -> if Meta.isexpr(x, [:hcat, :vcat, :vect, :typed_vcat, :typed_hcat])
+            latexarray(expr_to_array(x); kwargs...)
+        else
+            x
+        end, inputex
+    )
 
     recurseexp!(lstr::LaTeXString) = lstr.s
     function recurseexp!(ex)
         prevOp = Vector{Symbol}(undef, length(ex.args))
         fill!(prevOp, :none)
-        if Meta.isexpr(ex, :call) && ex.args[1] in (:sum, :prod) && Meta.isexpr(ex.args[2], :generator)
+        if Meta.isexpr(ex, :call) &&
+            ex.args[1] in (:sum, :prod) &&
+            Meta.isexpr(ex.args[2], :generator)
             op = ex.args[1]
             term = latexraw(ex.args[2].args[1])
             gen = ex.args[2].args[2]
@@ -89,7 +94,9 @@ function _latexraw(inputex::Expr; convert_unicode=true, kwargs...)
         else
             for i in 1:length(ex.args)
                 if isa(ex.args[i], Expr)
-                    length(ex.args[i].args) > 1 && ex.args[i].args[1] isa Symbol && (prevOp[i] = ex.args[i].args[1])
+                    length(ex.args[i].args) > 1 &&
+                        ex.args[i].args[1] isa Symbol &&
+                        (prevOp[i] = ex.args[i].args[1])
                     ex.args[i] = recurseexp!(ex.args[i])
                 elseif ex.args[i] isa AbstractArray
                     ex.args[i] = latexraw(ex.args[i]; kwargs...)
@@ -104,40 +111,57 @@ function _latexraw(inputex::Expr; convert_unicode=true, kwargs...)
     return LaTeXString(str)
 end
 
-
 function _latexraw(args...; kwargs...)
     @assert length(args) > 1 "latexify does not support objects of type $(typeof(args[1]))."
-    _latexraw(args; kwargs...)
+    return _latexraw(args; kwargs...)
 end
-_latexraw(arr::Union{AbstractArray, Tuple}; kwargs...) = _latexarray(arr; kwargs...)
+_latexraw(arr::Union{AbstractArray,Tuple}; kwargs...) = _latexarray(arr; kwargs...)
 _latexraw(i::Nothing; kwargs...) = ""
-_latexraw(i::SubString; parse=true, kwargs...) = latexraw(parse ? Meta.parse(i) : i; kwargs...)
+function _latexraw(i::SubString; parse=true, kwargs...)
+    return latexraw(parse ? Meta.parse(i) : i; kwargs...)
+end
 _latexraw(i::SubString{LaTeXStrings.LaTeXString}; kwargs...) = i
-_latexraw(i::Rational; kwargs...) = i.den == 1 ? latexraw(i.num; kwargs...) : latexraw(:($(i.num)/$(i.den)); kwargs...)
+function _latexraw(i::Rational; kwargs...)
+    return if i.den == 1
+        latexraw(i.num; kwargs...)
+    else
+        latexraw(:($(i.num) / $(i.den)); kwargs...)
+    end
+end
 _latexraw(i::QuoteNode; kwargs...) = _latexraw(i.value)
 
 function _latexraw(z::Complex; kwargs...)
     if iszero(z.re)
         isone(z.im) && return LaTeXString(get(kwargs, :imaginary_unit, "\\mathit{i}"))
-        isone(-z.im) && return LaTeXString("-$(get(kwargs, :imaginary_unit, "\\mathit{i}"))")
-        return LaTeXString("$(latexraw(z.im))$(get(kwargs, :imaginary_unit, "\\mathit{i}"))")
+        isone(-z.im) &&
+            return LaTeXString("-$(get(kwargs, :imaginary_unit, "\\mathit{i}"))")
+        return LaTeXString(
+            "$(latexraw(z.im))$(get(kwargs, :imaginary_unit, "\\mathit{i}"))"
+        )
     end
-    return LaTeXString("$(latexraw(z.re;kwargs...))$(z.im < 0 ? "-" : "+" )$(latexraw(abs(z.im);kwargs...))$(get(kwargs, :imaginary_unit, "\\mathit{i}"))")
+    return LaTeXString(
+        "$(latexraw(z.re;kwargs...))$(z.im < 0 ? "-" : "+" )$(latexraw(abs(z.im);kwargs...))$(get(kwargs, :imaginary_unit, "\\mathit{i}"))",
+    )
 end
 #latexraw(i::DataFrames.DataArrays.NAtype) = "\\textrm{NA}"
 _latexraw(str::LaTeXStrings.LaTeXString; kwargs...) = str
 
 function _latexraw(i::Number; fmt=PlainNumberFormatter(), kwargs...)
-    try isinf(i) && return LaTeXString("$(sign(i) == -1 ? "-" : "")\\infty") catch; end
+    try
+        isinf(i) && return LaTeXString("$(sign(i) == -1 ? "-" : "")\\infty")
+    catch
+    end
     fmt isa String && (fmt = PrintfNumberFormatter(fmt))
     return fmt(i)
 end
 
 function _latexraw(i::Char; convert_unicode=true, kwargs...)
-    LaTeXString(convert_unicode ? unicode2latex(string(i)) : string(i))
+    return LaTeXString(convert_unicode ? unicode2latex(string(i)) : string(i))
 end
 
-function _latexraw(i::Symbol; convert_unicode=true, snakecase=false, safescripts=false, kwargs...)
+function _latexraw(
+    i::Symbol; convert_unicode=true, snakecase=false, safescripts=false, kwargs...
+)
     str = string(i == :Inf ? :∞ : i)
     str = convert_subscript(str; snakecase=snakecase)
     convert_unicode && (str = unicode2latex(str; safescripts=safescripts))
@@ -146,8 +170,9 @@ end
 
 _latexraw(i::String; parse=true, kwargs...) = _latexraw(Val(parse), i; kwargs...)
 
-_latexraw(::Val{false}, i::String; convert_unicode=true, kwargs...) =
-    LaTeXString(convert_unicode ? unicode2latex(i) : i)
+function _latexraw(::Val{false}, i::String; convert_unicode=true, kwargs...)
+    return LaTeXString(convert_unicode ? unicode2latex(i) : i)
+end
 
 function _latexraw(::Val{true}, i::String; kwargs...)
     try

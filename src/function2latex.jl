@@ -1,4 +1,4 @@
-const function2latex = Dict{Symbol, String}(
+const function2latex = Dict{Symbol,String}(
     ## Greek alphabet
     :alpha => "\\alpha",
     :beta => "\\beta",
@@ -67,7 +67,7 @@ const function2latex = Dict{Symbol, String}(
     :log10 => "\\log_{10}",
     :log2 => "\\log_{2}",
     :gamma => "\\Gamma", # The Gamma function
-    )
+)
 
 const trigonometric_functions = [
     :sin,
@@ -97,5 +97,4 @@ const trigonometric_functions = [
     :acsc,
     :csch,
     :acsch,
-    ]
-
+]

@@ -1,50 +1,59 @@
 
-add_brackets(ex::Expr, vars) = postwalk(x -> x in vars ? "\\left[ $(convert_subscript(x)) \\right]" : x, ex)
+function add_brackets(ex::Expr, vars)
+    return postwalk(x -> x in vars ? "\\left[ $(convert_subscript(x)) \\right]" : x, ex)
+end
 add_brackets(arr::AbstractArray, vars) = [add_brackets(element, vars) for element in arr]
 add_brackets(s::Any, vars) = s
 
-default_packages(s) = vcat(["amssymb", "amsmath", "unicode-math"], occursin("\\ce{", s) ? ["mhchem"] : [])
-
-function _writetex(s::LaTeXString;
-        name=tempname(),
-        command="\\Large",
-        documentclass=("standalone", "varwidth=true"),
-        packages=default_packages(s),
-        preamble=""
+function default_packages(s)
+    return vcat(
+        ["amssymb", "amsmath", "unicode-math"], occursin("\\ce{", s) ? ["mhchem"] : []
     )
-    doc = """
-    \\documentclass$(_packagename(documentclass))
-    """ * prod(map(p -> "\\usepackage$(_packagename(p))\n", packages)) * preamble * """
-    \\begin{document}
-    {
-        $command
-        $s
-    }
-    \\end{document}
-    """
-    doc = replace(doc, "\\begin{align}"=>"\\[\n\\begin{aligned}")
-    doc = replace(doc, "\\end{align}"=>"\\end{aligned}\n\\]")
-    doc = replace(doc, "\\require{mhchem}\n"=>"")
-    texfile = name * ".tex"
-    write(texfile, doc)
-    texfile
 end
 
+function _writetex(
+    s::LaTeXString;
+    name=tempname(),
+    command="\\Large",
+    documentclass=("standalone", "varwidth=true"),
+    packages=default_packages(s),
+    preamble="",
+)
+    doc =
+        """
+  \\documentclass$(_packagename(documentclass))
+  """ *
+        prod(map(p -> "\\usepackage$(_packagename(p))\n", packages)) *
+        preamble *
+        """
+\\begin{document}
+{
+    $command
+    $s
+}
+\\end{document}
+"""
+    doc = replace(doc, "\\begin{align}" => "\\[\n\\begin{aligned}")
+    doc = replace(doc, "\\end{align}" => "\\end{aligned}\n\\]")
+    doc = replace(doc, "\\require{mhchem}\n" => "")
+    texfile = name * ".tex"
+    write(texfile, doc)
+    return texfile
+end
 
 function _openfile(name; ext="pdf")
     if Sys.iswindows()
-        run(`cmd /c "start $name.$ext"`, wait=false)
+        run(`cmd /c "start $name.$ext"`; wait=false)
     elseif Sys.islinux()
-        run(`xdg-open $name.$ext`, wait=false)
+        run(`xdg-open $name.$ext`; wait=false)
     elseif Sys.isapple()
-        run(`open $name.$ext`, wait=false)
+        run(`open $name.$ext`; wait=false)
     elseif Sys.isbsd()
-        run(`xdg-open $name.$ext`, wait=false)
+        run(`xdg-open $name.$ext`; wait=false)
     end
 
     return nothing
 end
-
 
 """
     render(::LaTeXString[, ::MIME"mime"]; debug=false, name=tempname(), command="\\Large", callshow=true, open=true)
@@ -67,7 +76,6 @@ function best_displayable()
     end
     return MIME("application/pdf")
 end
-
 
 function html_wrap(s::LaTeXString; scale=1.1, kwargs...)
     import_str = """
@@ -92,14 +100,13 @@ function html_wrap(s::LaTeXString; scale=1.1, kwargs...)
 end
 
 # render(s::LaTeXString, mime::MIME"juliavscode/html"; kwargs...) = render(stdout, mime; kwargs...)
-render(s::LaTeXString, mime::MIME"juliavscode/html"; kwargs...) = display(mime, html_wrap(s; kwargs...))
+function render(s::LaTeXString, mime::MIME"juliavscode/html"; kwargs...)
+    return display(mime, html_wrap(s; kwargs...))
+end
 
-function render(s::LaTeXString, ::MIME"application/pdf";
-        debug=false,
-        name=tempname(),
-        open=true,
-        kw...
-    )
+function render(
+    s::LaTeXString, ::MIME"application/pdf"; debug=false, name=tempname(), open=true, kw...
+)
     _writetex(s; name=name, kw...)
 
     cd(dirname(name)) do
@@ -121,13 +128,14 @@ function render(s::LaTeXString, ::MIME"application/pdf";
     return nothing
 end
 
-
-function render(s::LaTeXString, ::MIME"application/x-dvi";
-        debug=false,
-        name=tempname(),
-        open=true,
-        kw...
-    )
+function render(
+    s::LaTeXString,
+    ::MIME"application/x-dvi";
+    debug=false,
+    name=tempname(),
+    open=true,
+    kw...,
+)
     _writetex(s; name=name, kw...)
 
     cd(dirname(name)) do
@@ -149,16 +157,18 @@ function render(s::LaTeXString, ::MIME"application/x-dvi";
     return nothing
 end
 
-function render(s::LaTeXString, ::MIME"image/png";
-        debug=false,
-        convert = :gs,
-        name=tempname(),
-        callshow=true,
-        open=true,
-        dpi=DEFAULT_DPI[],
-        kw...
-    )
-    
+function render(
+    s::LaTeXString,
+    ::MIME"image/png";
+    debug=false,
+    convert=:gs,
+    name=tempname(),
+    callshow=true,
+    open=true,
+    dpi=DEFAULT_DPI[],
+    kw...,
+)
+
     # tex -> dvi -> png is notoriously bad for fonts (not OTF support), see e.g. tex.stackexchange.com/q/537281
     # prefer tex -> pdf -> png instead
     if convert === :gs
@@ -184,15 +194,16 @@ function render(s::LaTeXString, ::MIME"image/png";
     return nothing
 end
 
-
-function render(s::LaTeXString, ::MIME"image/svg";
-        debug=false,
-        convert = :dvisvgm,
-        name=tempname(),
-        callshow=true,
-        open=true,
-        kw...
-    )
+function render(
+    s::LaTeXString,
+    ::MIME"image/svg";
+    debug=false,
+    convert=:dvisvgm,
+    name=tempname(),
+    callshow=true,
+    open=true,
+    kw...,
+)
     if convert === :dvisvgm
         verb = debug ? 7 : 0
         cmd = `dvisvgm --no-fonts --pdf -v $verb $name.pdf -o $name.svg`

@@ -1,0 +1,2 @@
+style = "blue"
+ignore = ["docs/src/table_generator.jl", "test/runtests.jl"]

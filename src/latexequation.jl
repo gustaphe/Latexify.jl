@@ -12,4 +12,3 @@ function _latexequation(eq; starred=false, kwargs...)
     COPY_TO_CLIPBOARD && clipboard(latexstr)
     return latexstr
 end
-

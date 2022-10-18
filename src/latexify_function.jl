@@ -27,9 +27,11 @@ function latexify(args...; kwargs...)
     result = process_latexify(args...; kwargs...)
 
     should_render = get(kwargs, :render, false)
-    should_render isa Bool || throw(ArgumentError(
-        "The keyword argument `render` must be either `true` or `false`. Got $should_render"
-        ))
+    should_render isa Bool || throw(
+        ArgumentError(
+            "The keyword argument `render` must be either `true` or `false`. Got $should_render",
+        ),
+    )
 
     should_render && render(result)
     COPY_TO_CLIPBOARD && clipboard(result)
@@ -46,7 +48,7 @@ function process_latexify(args...; kwargs...)
 
     latex_function = infer_output(env, args...)
 
-    result = latex_function(args...; kwargs...)
+    return result = latex_function(args...; kwargs...)
 end
 
 apply_recipe(args...; kwargs...) = (args, kwargs)
@@ -54,19 +56,22 @@ apply_recipe(args...; kwargs...) = (args, kwargs)
 # These functions should only be called from inside `latexify()`, so that
 # `apply_recipe` gets a chance to change args
 const OUTPUTFUNCTIONS = Dict(
-                             :inline    => _latexinline,
-                             :tabular   => _latextabular,
-                             :table     => _latextabular,
-                             :raw       => _latexraw,
-                             :array     => _latexarray,
-                             :align     => _latexalign,
-                             :aligned   => (args...; kwargs...) -> _latexbracket(_latexalign(args...; kwargs..., aligned=true, starred=false); kwargs...),
-                             :eq        => _latexequation,
-                             :equation  => _latexequation,
-                             :bracket   => _latexbracket,
-                             :mdtable   => mdtable,
-                             :mdtext    => mdtext,
-                            )
+    :inline => _latexinline,
+    :tabular => _latextabular,
+    :table => _latextabular,
+    :raw => _latexraw,
+    :array => _latexarray,
+    :align => _latexalign,
+    :aligned =>
+        (args...; kwargs...) -> _latexbracket(
+            _latexalign(args...; kwargs..., aligned=true, starred=false); kwargs...
+        ),
+    :eq => _latexequation,
+    :equation => _latexequation,
+    :bracket => _latexbracket,
+    :mdtable => mdtable,
+    :mdtext => mdtext,
+)
 function infer_output(env, args...)
     env === :auto && return get_latex_function(args...)
     # Must be like this, because items in OUTPUTFUNCTIONS must be defined
@@ -83,14 +88,21 @@ This determines the default behaviour of `latexify()` for different inputs.
 """
 get_latex_function(args...) = _latexinline
 get_latex_function(args::AbstractArray...) = _latexequation
-get_latex_function(args::AbstractDict) = (args...; kwargs...) -> _latexequation(_latexarray(args...; kwargs...); kwargs...)
-get_latex_function(args::Tuple...) = (args...; kwargs...) -> _latexequation(_latexarray(args...; kwargs...); kwargs...)
+function get_latex_function(args::AbstractDict)
+    return (args...; kwargs...) ->
+        _latexequation(_latexarray(args...; kwargs...); kwargs...)
+end
+function get_latex_function(args::Tuple...)
+    return (args...; kwargs...) ->
+        _latexequation(_latexarray(args...; kwargs...); kwargs...)
+end
 get_latex_function(arg::LaTeXString) = (arg; kwargs...) -> arg
 
-function get_latex_function(x::AbstractArray{T}) where T <: AbstractArray
+function get_latex_function(x::AbstractArray{T}) where {T<:AbstractArray}
     try
         x = safereduce(hcat, x)
-        return (args...; kwargs...) -> _latexequation(_latexarray(args...; kwargs...); kwargs...)
+        return (args...; kwargs...) ->
+            _latexequation(_latexarray(args...; kwargs...); kwargs...)
     catch
         return _latexinline
     end
