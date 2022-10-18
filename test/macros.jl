@@ -1,19 +1,20 @@
-l = @latexify dummyfunc(x; y=1, z=3) = x^2/y + z
+l = @latexify dummyfunc(x; y=1, z=3) = x^2 / y + z
 @test l == raw"$\mathrm{dummyfunc}\left( x; y = 1, z = 3 \right) = \frac{x^{2}}{y} + z$"
 
-@test_throws UndefVarError dummyfunc(1.)
+@test_throws UndefVarError dummyfunc(1.0)
 
-l2 = @latexrun dummyfunc2(x; y=1, z=3) = x^2/y + z
+l2 = @latexrun dummyfunc2(x; y=1, z=3) = x^2 / y + z
 @test l2 == raw"$\mathrm{dummyfunc2}\left( x; y = 1, z = 3 \right) = \frac{x^{2}}{y} + z$"
 
-@test dummyfunc2(1.) == 4
+@test dummyfunc2(1.0) == 4
 
-l3 = @latexify dummyfunc2(x::Number; y=1, z=3) = x^2/y + z
-@test l3 == raw"$\mathrm{dummyfunc2}\left( x::Number; y = 1, z = 3 \right) = \frac{x^{2}}{y} + z$"
+l3 = @latexify dummyfunc2(x::Number; y=1, z=3) = x^2 / y + z
+@test l3 ==
+    raw"$\mathrm{dummyfunc2}\left( x::Number; y = 1, z = 3 \right) = \frac{x^{2}}{y} + z$"
 
-
-l4 = @latexify dummyfunc2(::Number; y=1, z=3) = x^2/y + z
-@test l4 == raw"$\mathrm{dummyfunc2}\left( ::Number; y = 1, z = 3 \right) = \frac{x^{2}}{y} + z$"
+l4 = @latexify dummyfunc2(::Number; y=1, z=3) = x^2 / y + z
+@test l4 ==
+    raw"$\mathrm{dummyfunc2}\left( ::Number; y = 1, z = 3 \right) = \frac{x^{2}}{y} + z$"
 
 l5 = @latexify x = abs2(-3)
 @test l5 == raw"$x = \left|-3\right|^{2}$"
@@ -37,27 +38,27 @@ l10 = @latexdefine x = $(abs2(-2))
 @test l10 == raw"$x = 4 = 4$"
 @test x == 4
 
-l11 = @latexify x = 1 env=:raw
+l11 = @latexify x = 1 env = :raw
 @test l11 == raw"x = 1"
 
-l12 = @latexrun x = 1 env=:raw
+l12 = @latexrun x = 1 env = :raw
 @test l12 == raw"x = 1"
 
-l13 = @latexdefine y = x env=:raw
+l13 = @latexdefine y = x env = :raw
 @test l13 == raw"y = x = 1"
 
 env = :raw
 l14 = @latexdefine y env
 @test l14 == raw"y = 1"
 
-l15 = @latexdefine y = x post=float
+l15 = @latexdefine y = x post = float
 @test l15 == raw"$y = x = 1.0$"
 @test y isa Integer
 
-post = x->round(x; sigdigits=3)
+post = x -> round(x; sigdigits=3)
 l16 = @latexdefine y = π post
 @test l16 == raw"$y = \pi = 3.14$"
 @test y == π
 
-@test latexify(:(@hi(x / y))) == replace(
-raw"$\mathrm{@hi}\left( \frac{x}{y} \right)$", "\r\n"=>"\n")
+@test latexify(:(@hi(x / y))) ==
+    replace(raw"$\mathrm{@hi}\left( \frac{x}{y} \right)$", "\r\n" => "\n")

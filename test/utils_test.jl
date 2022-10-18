@@ -26,7 +26,8 @@ end
 
 filename = Latexify._writetex(xdoty_tex)
 tex = read(filename, String)
-@test tex == replace(raw"""
+@test tex == replace(
+    raw"""
 \documentclass[varwidth=true]{standalone}
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -37,11 +38,14 @@ tex = read(filename, String)
     $x \cdot y$
 }
 \end{document}
-""", "\r\n"=>"\n")
+""",
+    "\r\n" => "\n",
+)
 
 filename = Latexify._writetex(L"\ce{ 2 P_1 &<=>[k_{+}][k_{-}] D_{1}}")
 tex = read(filename, String)
-@test tex == replace(raw"""
+@test tex == replace(
+    raw"""
 \documentclass[varwidth=true]{standalone}
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -53,11 +57,16 @@ tex = read(filename, String)
     $\ce{ 2 P_1 &<=>[k_{+}][k_{-}] D_{1}}$
 }
 \end{document}
-""", "\r\n"=>"\n")
+""",
+    "\r\n" => "\n",
+)
 
-filename = Latexify._writetex(L"\qty{135}{nm}"; documentclass=("article", "a4paper"), packages=("siunitx",))
+filename = Latexify._writetex(
+    L"\qty{135}{nm}"; documentclass=("article", "a4paper"), packages=("siunitx",)
+)
 tex = read(filename, String)
-@test tex == replace(raw"""
+@test tex == replace(
+    raw"""
 \documentclass[a4paper]{article}
 \usepackage{siunitx}
 \begin{document}
@@ -66,7 +75,9 @@ tex = read(filename, String)
     $\qty{135}{nm}$
 }
 \end{document}
-""", "\r\n"=>"\n")
+""",
+    "\r\n" => "\n",
+)
 
 @test Latexify._packagename("hi") == "{hi}"
 @test Latexify._packagename(("hi", "x=5")) == "[x=5]{hi}"
