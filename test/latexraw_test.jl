@@ -174,6 +174,8 @@ raw"$\left( \frac{3}{2} \right)^{2}$", "\r\n"=>"\n")
 @test latexraw(:(3 * (a .< b .<= c < d <= e > f <= g .<= h .< i == j .== k != l .!= m))) ==
 raw"3 \cdot \left( a < b \leq c < d \leq e > f \leq g \leq h < i = j = k \neq l \neq m \right)"
 
+@test latexraw(:(∀(f(x), x ∈ A))) == raw"f(x) \forall x \in A"
+@test latexraw(:(x in A)) == raw"x \in A"
 
 #### Test the imaginary_unit keyword option
 @test latexraw(5im; imaginary_unit="\\textit{i}") == raw"5\textit{i}"

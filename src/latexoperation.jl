@@ -92,32 +92,46 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
 
     string(op)[1] == '.' && (op = Symbol(string(op)[2:end]))
 
-    # infix_operators = [:<, :>, Symbol("=="), :<=, :>=, :!=]
-    comparison_operators = Dict(
+    infix_operators = Dict(
         :< => "<",
         :.< => "<",
         :> => ">",
         :.> => ">",
         Symbol("==") => "=",
         Symbol(".==") => "=",
+        :(===) => "\\equiv",
+        :≠ => "\\ne",
         :<= => "\\leq",
         :.<= => "\\leq",
         :>= => "\\geq",
         :.>= => "\\geq",
         :!= => "\\neq",
         :.!= => "\\neq",
+        :!== => "\\nequiv",
+        :∈ => "\\in",
+        :in => "\\in",
+        :∋ => "\\ni",
+        :contains => "\\ni",
+        :∉ => "\\notin",
+        :∌ => "\\nni",
+        :∀ => "\\forall",
+        :⊃ => "\\supset",
+        :⊂ => "\\subset",
+        :⊅ => "\\nsupset",
+        :⊄ => "\\nsubset",
+        :(=>) => "\\Rightarrow",
+        :(&&) => "\\wedge",
+        :(||) => "\\vee",
         )
 
-    if op in keys(comparison_operators) && length(args) == 3
-        str = "$(args[2]) $(comparison_operators[op]) $(args[3])"
-        str = "\\left( $str \\right)"
+    if op in keys(infix_operators) && length(args) == 3
+        str = "$(args[2]) $(infix_operators[op]) $(args[3])"
         return str
     end
 
     ### Check for chained comparison operators
     if ex.head == :comparison && Symbol.(args[2:2:end]) ⊆ keys(comparison_operators)
         str = join([isodd(i) ? "$var" : comparison_operators[var] for (i, var) in enumerate(Symbol.(args))], " ")
-        str = "\\left( $str \\right)"
         return str
     end
 
@@ -211,12 +225,6 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
             return "$begincases$(args[2]) & $textif $(args[1])$endcases"
         end
     end
-
-    ## Conditional operators converted to logical operators.
-    ex.head == :(&&) && length(args) == 2 && return "$(args[1]) \\wedge $(args[2])"
-    ex.head == :(||) && length(args) == 2 && return "$(args[1]) \\vee $(args[2])"
-
-
 
     ## if we have reached this far without a return, then error.
     error("Latexify.jl's latexoperation does not know what to do with one of the
