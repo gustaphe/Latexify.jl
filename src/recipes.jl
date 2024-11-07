@@ -33,6 +33,13 @@ function create_kw_body(func_signature::Expr)
     kw_dict = Dict{Symbol, Any}()
     if isa(args[1], Expr) && args[1].head == :parameters
         for kwpair in args[1].args
+            if isa(kwpair, Expr) && kwpair.head == :...
+                # If user wants to call kwargs something else by supplying
+                # `f(; keyword_arguments...)`
+                # simply create the variable `keyword_arguments` and point it to `kwargs`
+                push!(kw_body.args, :($(kwpair.args[1]) = kwargs))
+                continue
+            end
             k, v = kwpair.args
             if isa(k, Expr) && k.head == :(::)
                 k = k.args[1]

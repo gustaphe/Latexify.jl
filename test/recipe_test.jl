@@ -227,4 +227,10 @@ end
 @test latexify(NothingThing(); keyword=nothing) == raw"$a$"
 @test latexify(NothingThing(); keyword=:nothing) == raw"$b$"
 
-
+struct KeywordCounter end
+@latexrecipe function f(::KeywordCounter; keyworddict...)
+    return length(keyworddict)
+end
+@test latexify(KeywordCounter()) == raw"$0$"
+@test latexify(KeywordCounter(); a=1) == raw"$1$"
+@test latexify(KeywordCounter(); a=1, b=2, c="c") == raw"$3$"
