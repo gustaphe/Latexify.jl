@@ -37,6 +37,13 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
         end
     end
 
+    if ex.head == :latexify_substack
+        if get(kwargs, :snakecase, false)
+            return join(args, "\\_")
+        end
+        return "$(args[1])_{$(join(args[2:end], ","))}"
+    end
+
     if ex.head == :call && op isa Function
         # Convert Expr(:call, sin, 3) to Expr(:call, :sin, 3)
         op = Symbol(op)
@@ -270,7 +277,18 @@ function latexoperation(ex::Expr, prevOp::AbstractArray; kwargs...)::String
     return sentinel
 end
 
-latexoperation(sym::Symbol, prevOp::AbstractArray; kwargs...) = "$sym"
+function latexoperation(sym::Symbol, prevOp::AbstractArray; snakecase=false, kwargs...)
+    str = string(sym)
+    subscript_list = split(str, r"\\?_")
+    for (i, val) in pairs(subscript_list)
+        if length(val) > 1
+            subscript_list[i] = "\\mathrm{$val}"
+        end
+    end
+    length(subscript_list) == 1 && return only(subscript_list)
+    snakecase && return join(subscript_list, "\\_")
+    return "$(subscript_list[1])_{$(join(subscript_list[2:end], "\\_"))}"
+end
 
 function convert_subscript!(ex::Expr, kwargs...)
     for i in 1:length(ex.args)
@@ -282,10 +300,11 @@ function convert_subscript!(ex::Expr, kwargs...)
     return nothing
 end
 
-function convert_subscript(str::String; snakecase=false, function_name=false, kwargs...)
+function convert_subscript(sym::Symbol; snakecase=false, function_name=false, kwargs...)
+    str = string(sym)
     subscript_list = split(str, r"\\?_")
     if snakecase
-        return join(subscript_list, "\\_")
+        return "\\mathrm{$(join(subscript_list, "\\_"))}"
     else
         mainscript = subscript_list[1]
         if function_name && length(mainscript) > 1 && isascii(mainscript)
@@ -297,8 +316,7 @@ function convert_subscript(str::String; snakecase=false, function_name=false, kw
     end
 end
 
-convert_subscript(sym::Symbol; kwargs...) = convert_subscript(string(sym); kwargs...)
-convert_subscript(n::Number; kwargs...) = convert_subscript(string(n); kwargs...)
+convert_subscript(n::Number; kwargs...) = convert_subscript(Symbol(n); kwargs...)
 
 operator_name(sym; kwargs...) = convert_subscript(sym; kwargs..., function_name=true)
 operator_name(lnn::LineNumberNode;kwargs...) = ""

@@ -140,8 +140,7 @@ function _latexraw(i::Char; convert_unicode=true, kwargs...)
 end
 
 function _latexraw(i::Symbol; convert_unicode=true, snakecase=false, safescripts=false, kwargs...)
-    str = get(special_symbols, i, string(i))
-    str = convert_subscript(str; snakecase=snakecase)
+    str = get(special_symbols, i, latexoperation(i, []; snakecase=snakecase))
     convert_unicode && (str = unicode2latex(str; safescripts=safescripts))
     return LaTeXString(str)
 end
